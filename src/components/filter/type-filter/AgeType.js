@@ -126,11 +126,11 @@ export default function AgeType({activeFilter, setFilterData, filterData}) {
             (filterData &&
               filterData[activeFilter.fieldName] &&
               filterData[activeFilter.fieldName].min) ||
-              false,
+              0,
             (filterData &&
               filterData[activeFilter.fieldName] &&
               filterData[activeFilter.fieldName].max) ||
-              false,
+              0,
           ]}
           onChange={handleChange}
         />

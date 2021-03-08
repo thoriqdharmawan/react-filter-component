@@ -155,12 +155,12 @@ export default function SalaryType({activeFilter, setFilterData, filterData}) {
               filterData[activeFilter.fieldName] &&
               filterData[activeFilter.fieldName].min &&
               filterData[activeFilter.fieldName].min) ||
-              null,
+              0,
             (filterData &&
               filterData[activeFilter.fieldName] &&
               filterData[activeFilter.fieldName].max &&
-              filterData[activeFilter.fieldName].max.toString()) ||
-              null,
+              filterData[activeFilter.fieldName].max) ||
+              0,
           ]}
           onChange={handleChange}
         />
