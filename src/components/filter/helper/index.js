@@ -25,3 +25,8 @@ export const changeToNumber = number => {
     return number
   }
 }
+
+export const filterArrayOfObject = (array, anotherArray) =>
+  array.filter(
+    (elem) => !anotherArray.find(({ value }) => elem.value === value)
+  )

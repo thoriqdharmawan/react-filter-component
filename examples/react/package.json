@@ -10,7 +10,12 @@
     "eject": "node ../../node_modules/react-scripts/bin/react-scripts.js eject"
   },
   "dependencies": {
+    "@apollo/react-hooks": "file:../../node_modules/@apollo/react-hooks",
     "@material-ui/core": "file:../../node_modules/@material-ui/core",
+    "apollo-cache-inmemory": "file:../../node_modules/apollo-cache-inmemory",
+    "apollo-client": "file:../../node_modules/apollo-client",
+    "apollo-link-http": "file:../../node_modules/apollo-link-http",
+    "graphql-tag": "file:../../node_modules/graphql-tag",
     "react-filter": "file:../..",
     "react": "file:../../node_modules/react",
     "react-dom": "file:../../node_modules/react-dom",

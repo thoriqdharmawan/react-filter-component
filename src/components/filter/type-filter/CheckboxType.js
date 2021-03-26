@@ -1,6 +1,5 @@
 import {
   Checkbox,
-  CircularProgress,
   FormControlLabel,
   FormGroup,
   InputAdornment,
@@ -12,6 +11,8 @@ import {CheckboxTypeWrapper} from '../FilterButton.style'
 import SearchIcon from '@material-ui/icons/Search'
 import {useLazyQuery} from '@apollo/react-hooks'
 import gql from 'graphql-tag'
+import { LoadingComponent } from '../shared/CircularProgress'
+import { filterArrayOfObject } from '../helper'
 
 const useStyles = makeStyles({
   root: {
@@ -75,6 +76,8 @@ const DUMY = gql`
   }
 `
 
+const SLICE_TRESHOLD = 5
+
 export default function CheckboxType({
   activeFilter,
   setFilterData,
@@ -88,14 +91,14 @@ export default function CheckboxType({
   const [loading, setLoading] = useState(false)
   const [optionResult, setOptionResult] = useState(undefined)
 
-  const [getDataQuery, {data}] = useLazyQuery((fetch && fetch.query) || DUMY)
+  const [getDataQuery, {data, loading: fetchLoading}] = useLazyQuery((fetch && fetch.query) || DUMY)
 
   useLayoutEffect(() => {
     if (fetch) {
       getDataQuery({
         variables: {
           ...fetch.options.variables,
-          search: `%${search}%`,
+          search: `${search}`,
         },
       })
     } else {
@@ -170,7 +173,7 @@ export default function CheckboxType({
   }
 
   const handleSelectAll = () => {
-    setFilterData(filter => ({...filter, [fieldName]: optionResult}))
+    setFilterData(filter => ({...filter, [fieldName]: [...filterData[fieldName], ...optionResult]}))
   }
   const handleReset = () => {
     setFilterData(filter => ({...filter, [fieldName]: []}))
@@ -191,6 +194,10 @@ export default function CheckboxType({
       }
     }
   }
+
+  const _selectedCheckbox =
+    filterData && filterData[fieldName] && filterData[fieldName] || []
+
   return (
     <CheckboxTypeWrapper height={height}>
       <TextField
@@ -219,11 +226,46 @@ export default function CheckboxType({
           Reset
         </span>
       </div>
+      {_selectedCheckbox[0] && (
+        <>
+          <div className='list-checkbox'>
+            <FormGroup>
+              {_selectedCheckbox.reverse().slice(0, SLICE_TRESHOLD).map((item, i) => (
+                <CheckboxItem
+                  checked={
+                    (filterData &&
+                      filterData[fieldName] &&
+                      filterData[fieldName].some(
+                        (e) => e.value === item.value
+                      )) ||
+                    false
+                  }
+                  key={`${i}-${item.value}`}
+                  onChange={
+                    fetch
+                      ? (e, check) => handleChange(e, check, item)
+                      : () => handleCheck(item)
+                  }
+                  value={item.value}
+                  label={item.label}
+                  name={fieldName}
+                />
+              ))}
+            </FormGroup>
+          </div>
+          {_selectedCheckbox.length > SLICE_TRESHOLD && (
+            <div className="more-text">
+              and {_selectedCheckbox.length - SLICE_TRESHOLD} hidden items
+            </div>
+          )}
+          <div className='divider' />
+        </>
+      )}
       <div className="list-checkbox">
         <FormGroup>
-          {optionResult && !loading ? (
+          {optionResult && !loading && !fetchLoading ? (
             optionResult.length > 0 ? (
-              optionResult.map((item, i) => (
+              filterArrayOfObject(optionResult, _selectedCheckbox).map((item, i) => (
                 <CheckboxItem
                   checked={
                     (filterData &&
@@ -247,18 +289,7 @@ export default function CheckboxType({
             ) : (
               <div className="empty-list">{emptyState || ''}</div>
             )
-          ) : (
-            <div
-              style={{
-                display: 'flex',
-                alignItems: 'center',
-                justifyContent: 'center',
-                padding: '40px 0px',
-              }}
-            >
-              <CircularProgress />
-            </div>
-          )}
+          ) : <LoadingComponent />}
         </FormGroup>
       </div>
     </CheckboxTypeWrapper>

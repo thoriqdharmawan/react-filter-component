@@ -114,7 +114,7 @@ export const CheckboxTypeWrapper = styled.div`
   .list-checkbox {
     display: flex;
     flex-direction: column;
-    height: ${props => props.height + 70}px;
+    // height: ${props => props.height + 70}px;
     overflow-y: scroll;
     ::-webkit-scrollbar {
       width: 4px;
@@ -131,6 +131,16 @@ export const CheckboxTypeWrapper = styled.div`
       padding: 34px;
       font-size: 12px;
     }
+  }
+  .more-text {
+    color: #a9a8a8;
+    font-size: 12px;
+    padding: 4px 12px 6px;
+    font-style: italic;
+  }
+  .divider {
+    border-top: 1px solid #e5e5e5;
+    margin: 8px 14px 14px;
   }
 `
 export const DateTypeWrapper = styled.div`

@@ -1,31 +1,25 @@
 import React from 'react'
 import { Filter } from 'react-filter'
-import {createMuiTheme, MuiThemeProvider} from '@material-ui/core'
+import { MuiThemeProvider } from '@material-ui/core'
+import { theme } from './theme'
+import gql from 'graphql-tag'
 
-const theme = createMuiTheme({
-  font: 'muli',
-  borderColor: 'rgb(204, 204, 204)',
-  palette: {
-    primary: {
-      main: '#055469',
-    },
-    secondary: {
-      main: '#039be5',
-    },
-    danger: {
-      main: '#ef4d5e',
-    },
-  },
-  typography: {
-    fontFamily: ['muli'],
-    button: {
-      textTransform: 'capitalize',
-    },
-    h6: {
-      fontWeight: 700,
-    },
-  },
-})
+const GET_LAUCH_PAST  = gql`
+  query ($search: String) {
+    launchesPast(find: {mission_name: $search}, limit: 10) {
+      id
+      mission_name
+    }
+  }  
+`
+const GET_SHIPS  = gql`
+  query ($search: String) {
+    ships(limit: 10, find: {name: $search}) {
+      id
+      name
+    }
+  }   
+`
 
 const App = () => {
   const listFilter = [
@@ -40,22 +34,56 @@ const App = () => {
           {value: 2, label: 'Approved'},
           {value: 3, label: 'Rejected'},
           {value: 4, label: 'Cancelled'},
-          {
-            value: 5,
-            label:
-              'Test style menggunakan label dengan nama yang panjang, Test ',
-          },
-          {
-            value: 6,
-            label:
-              'Test style menggunakan label dengan nama yang panjang, Testngan nama yang panjang, Test ',
-          },
-          {value: 7, label: 'Test style menggunakan labeng, Test '},
-          {
-            value: 8,
-            label: 'Test style menggunakan laestngan nama yang panjang, Test ',
-          },
         ],
+      },
+    },
+    {
+      name: 'Launch Past', // REQUIRED
+      fieldName: 'launchPast', // REQUIRED => Unique value
+      type: 'checkbox', // REQUIRED  => Type String => checkbox | date | age | salary
+      // emptyState: 'Empty List', // OPTIONAL => Type String | ReactNode
+      options: {
+        // REQUIRED  =>  Bisa list ngefetch ataupun list hardode
+        fetch: {
+          // ## Cntoh List nge fetch ##
+          query: GET_LAUCH_PAST, // REQUIRED  => must include $String
+          options: {},
+          setData: data => {
+            // REQUIRED => untuk nge mapping data list
+            if (data && data.launchesPast) {
+              return data.launchesPast.map(({id, mission_name}) => {
+                return {
+                  value: id,
+                  label: mission_name,
+                }
+              })
+            }
+          },
+        },
+      },
+    },
+    {
+      name: 'Ships', // REQUIRED
+      fieldName: 'ships', // REQUIRED => Unique value
+      type: 'checkbox', // REQUIRED  => Type String => checkbox | date | age | salary
+      // emptyState: 'Empty List', // OPTIONAL => Type String | ReactNode
+      options: {
+        // REQUIRED  =>  Bisa list ngefetch ataupun list hardode
+        fetch: {
+          // ## Cntoh List nge fetch ##
+          options: {},
+          query: GET_SHIPS, // REQUIRED  => must include $String
+          setData: data => {
+            if (data && data.ships) {
+              return data.ships.map(({id, name}) => {
+                return {
+                  value: id,
+                  label: name,
+                }
+              })
+            }
+          },
+        },
       },
     },
     {
@@ -95,15 +123,17 @@ const App = () => {
   return (
     <MuiThemeProvider theme={theme}>
       <React.Fragment>
-        <Filter 
-          anchorOrigin={anchorOrigin} // OPTIONAL || see  https://material-ui.com/components/popover/#anchor-playground
-          transformOrigin={transformOrigin} // OPTIONAL || see  https://material-ui.com/components/popover/#anchor-playground
-          id="filter-wlb" // REQUIRED, Unique value
-          onApply={handleApply} // REQUIRED
-          listFilter={listFilter} // REQUIRED
-        >
-          <button>Click me</button>
-        </Filter>
+        <div style={{width: '100%', display: 'flex', justifyContent: 'center'}}>
+          <Filter 
+            anchorOrigin={anchorOrigin} // OPTIONAL || see  https://material-ui.com/components/popover/#anchor-playground
+            transformOrigin={transformOrigin} // OPTIONAL || see  https://material-ui.com/components/popover/#anchor-playground
+            id="filter-wlb" // REQUIRED, Unique value
+            onApply={handleApply} // REQUIRED
+            listFilter={listFilter} // REQUIRED
+          >
+            <button>Click me</button>
+          </Filter>
+        </div>
       </React.Fragment>
     </MuiThemeProvider>
   )
