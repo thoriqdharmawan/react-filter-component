@@ -1,5 +1,5 @@
 import React from 'react'
-import {TypeFilterWrapper} from './FilterButton.style'
+import { TypeFilterWrapper } from './FilterButton.style'
 import AgeType from './type-filter/AgeType'
 import CheckboxType from './type-filter/CheckboxType'
 import DateType from './type-filter/DateType'
@@ -10,9 +10,19 @@ export default function TypeFilter({
   setFilterData,
   filterData,
   height,
+  bridge,
+  globalNin,
+  setGlobalNin
 }) {
-  const renderType = (activeFilter, setFilterData, filterData) => {
-    const {type, utils} = activeFilter
+  const renderType = ({
+    activeFilter,
+    setFilterData,
+    filterData,
+    bridge,
+    setGlobalNin,
+    globalNin
+  }) => {
+    const { type, utils } = activeFilter
     switch (type) {
       case 'checkbox':
         return (
@@ -21,6 +31,9 @@ export default function TypeFilter({
             activeFilter={activeFilter}
             setFilterData={setFilterData}
             filterData={filterData}
+            bridge={bridge}
+            setGlobalNin={setGlobalNin}
+            globalNin={globalNin}
           />
         )
       case 'date':
@@ -30,6 +43,7 @@ export default function TypeFilter({
             setFilterData={setFilterData}
             filterData={filterData}
             utils={utils}
+            bridge={bridge}
           />
         )
       case 'age':
@@ -38,6 +52,7 @@ export default function TypeFilter({
             filterData={filterData}
             activeFilter={activeFilter}
             setFilterData={setFilterData}
+            bridge={bridge}
           />
         )
       case 'salary':
@@ -46,16 +61,24 @@ export default function TypeFilter({
             filterData={filterData}
             activeFilter={activeFilter}
             setFilterData={setFilterData}
+            bridge={bridge}
           />
         )
       default:
-        return <p></p>
+        return <p />
     }
   }
 
   return (
     <TypeFilterWrapper>
-      {renderType(activeFilter, setFilterData, filterData)}
+      {renderType({
+        activeFilter,
+        setFilterData,
+        filterData,
+        bridge,
+        globalNin,
+        setGlobalNin
+      })}
     </TypeFilterWrapper>
   )
 }

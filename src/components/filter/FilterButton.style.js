@@ -5,7 +5,7 @@ export const ListFilterWrapper = styled.div`
   display: flex;
   flex-direction: column;
   justify-content: space-between;
-  width: 218px;
+  width: 270px;
   box-shadow: 0 3px 6px 0 rgba(0, 0, 0, 0.16);
   z-index: 1;
 
@@ -74,6 +74,21 @@ export const ItemFilterWrapper = styled.div`
       !props.active && props.count && props.count !== 0 ? '#014a62' : '#fff'};
     color: ${props => (props.active ? '#014a62' : '#fff')};
     padding: 2px 7px;
+  }
+`
+export const LabelTab = styled.div`
+  display: flex;
+  .count {
+    display: ${props => (props.count === 0 || !props.count ? 'none' : 'flex')};
+    border-radius: 24px;
+    background-color: ${props =>
+      !props.active && props.count && props.count !== 0 ? '#014a62' : '#fff'};
+    color: #fff;
+    padding: 0px 10px;
+    margin-left: 10px;
+    text-align: center;
+    align-items: center;
+    font-size: 10px;
   }
 `
 export const TypeFilterWrapper = styled.div`

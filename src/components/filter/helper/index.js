@@ -1,4 +1,4 @@
-export const formatatSalary = salary => {
+export const formatatSalary = (salary) => {
   if (salary && !Number.isInteger(salary) && salary !== '') {
     const number_string = salary.replace(/[^,\d]/g, '').toString()
     const split = number_string.split(',')
@@ -18,7 +18,7 @@ export const formatatSalary = salary => {
   }
 }
 
-export const changeToNumber = number => {
+export const changeToNumber = (number) => {
   if (number && !Number.isInteger(number)) {
     return parseInt(number.split('.').join(''))
   } else {
@@ -30,3 +30,38 @@ export const filterArrayOfObject = (array, anotherArray) =>
   array.filter(
     (elem) => !anotherArray.find(({ value }) => elem.value === value)
   )
+
+export const getNinVariables = (array, object, isCheck) => {
+  let _ninObj = []
+  if (isCheck) {
+    _ninObj = [...array, object]
+  } else {
+    _ninObj = [...array].filter(function (itm) {
+      return itm.value !== object.value
+    })
+  }
+  return _ninObj.map((obj) => {
+    return obj.value
+  })
+}
+
+
+export const getTotalCountChecked = (checkboxFilter = [], filterData = {}) => {
+  let countInclude = 0
+  let countExclude = 0
+  checkboxFilter.map((res) => {
+    countInclude =
+      countInclude +
+      ((filterData[0] &&
+        filterData[0][res.fieldName] &&
+        filterData[0][res.fieldName].length) ||
+        0)
+    countExclude =
+      countExclude +
+      ((filterData[1] &&
+        filterData[1][res.fieldName] &&
+        filterData[1][res.fieldName].length) ||
+        0)
+  })
+  return [countInclude, countExclude]
+}

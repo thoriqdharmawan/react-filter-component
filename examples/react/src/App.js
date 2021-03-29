@@ -4,22 +4,33 @@ import { MuiThemeProvider } from '@material-ui/core'
 import { theme } from './theme'
 import gql from 'graphql-tag'
 
-const GET_LAUCH_PAST  = gql`
-  query ($search: String) {
-    launchesPast(find: {mission_name: $search}, limit: 10) {
-      id
-      mission_name
-    }
-  }  
-`
-const GET_SHIPS  = gql`
-  query ($search: String) {
-    ships(limit: 10, find: {name: $search}) {
+const PLANETS  = gql`
+  query getPlanets ($search: String, $limit: Int, $nin: [uuid!]) {
+    planets(limit: $limit, where: {name: {_ilike: $search}, id: {_nin: $nin}}) {
       id
       name
     }
-  }   
+    planets_aggregate {
+      aggregate {
+        count
+      }
+    }
+  }
 `
+const GET_ASTRONAUTS = gql`
+  query getAstronauts ($search: String, $limit: Int, $nin: [Int!]) {
+    astronauts(limit: $limit, where: {name: {_ilike: $search}, id: {_nin: $nin}}) {
+      name
+      id
+    }
+    astronauts_aggregate {
+      aggregate {
+        count
+      }
+    }
+  }
+`
+
 
 const App = () => {
   const listFilter = [
@@ -38,49 +49,60 @@ const App = () => {
       },
     },
     {
-      name: 'Launch Past', // REQUIRED
-      fieldName: 'launchPast', // REQUIRED => Unique value
+      name: 'Planets', // REQUIRED
+      fieldName: 'planets', // REQUIRED => Unique value
       type: 'checkbox', // REQUIRED  => Type String => checkbox | date | age | salary
       // emptyState: 'Empty List', // OPTIONAL => Type String | ReactNode
       options: {
         // REQUIRED  =>  Bisa list ngefetch ataupun list hardode
         fetch: {
           // ## Cntoh List nge fetch ##
-          query: GET_LAUCH_PAST, // REQUIRED  => must include $String
-          options: {},
+          query: PLANETS, // REQUIRED  => must include $String
+          options: {
+            variables: {
+              limit: 6
+            }
+          },
           setData: data => {
             // REQUIRED => untuk nge mapping data list
-            if (data && data.launchesPast) {
-              return data.launchesPast.map(({id, mission_name}) => {
+            if (data && data.planets) {
+              const _data = data.planets.map(({id, name}) => {
                 return {
                   value: id,
-                  label: mission_name,
+                  label: name,
                 }
               })
+              return [_data, data.planets_aggregate.aggregate.count]
             }
           },
         },
       },
     },
     {
-      name: 'Ships', // REQUIRED
-      fieldName: 'ships', // REQUIRED => Unique value
+      name: 'Astronauts', // REQUIRED
+      fieldName: 'astronauts', // REQUIRED => Unique value
       type: 'checkbox', // REQUIRED  => Type String => checkbox | date | age | salary
       // emptyState: 'Empty List', // OPTIONAL => Type String | ReactNode
       options: {
         // REQUIRED  =>  Bisa list ngefetch ataupun list hardode
         fetch: {
           // ## Cntoh List nge fetch ##
-          options: {},
-          query: GET_SHIPS, // REQUIRED  => must include $String
+          query: GET_ASTRONAUTS, // REQUIRED  => must include $String
+          options: {
+            variables: {
+              limit: 6
+            }
+          },
           setData: data => {
-            if (data && data.ships) {
-              return data.ships.map(({id, name}) => {
+            // REQUIRED => untuk nge mapping data list
+            if (data && data.astronauts) {
+              const _data = data.astronauts.map(({id, name}) => {
                 return {
                   value: id,
                   label: name,
                 }
               })
+              return [_data, data.astronauts_aggregate.aggregate.count]
             }
           },
         },
@@ -120,6 +142,7 @@ const App = () => {
       vertical: 'top',
       horizontal: 'right',
   }
+
   return (
     <MuiThemeProvider theme={theme}>
       <React.Fragment>

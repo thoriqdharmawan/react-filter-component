@@ -8,7 +8,7 @@ import { createHttpLink } from 'apollo-link-http'
 import { ApolloProvider } from '@apollo/react-hooks'
 
 const httpLink = createHttpLink({
-  uri: 'https://api.spacex.land/graphql/'
+  uri: 'https://test-hasura-thoriq.herokuapp.com/v1/graphql'
 })
 
 const client = new ApolloClient({
