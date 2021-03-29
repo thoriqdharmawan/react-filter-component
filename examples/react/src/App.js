@@ -1,31 +1,36 @@
 import React from 'react'
 import { Filter } from 'react-filter'
-import {createMuiTheme, MuiThemeProvider} from '@material-ui/core'
+import { MuiThemeProvider } from '@material-ui/core'
+import { theme } from './theme'
+import gql from 'graphql-tag'
 
-const theme = createMuiTheme({
-  font: 'muli',
-  borderColor: 'rgb(204, 204, 204)',
-  palette: {
-    primary: {
-      main: '#055469',
-    },
-    secondary: {
-      main: '#039be5',
-    },
-    danger: {
-      main: '#ef4d5e',
-    },
-  },
-  typography: {
-    fontFamily: ['muli'],
-    button: {
-      textTransform: 'capitalize',
-    },
-    h6: {
-      fontWeight: 700,
-    },
-  },
-})
+const PLANETS  = gql`
+  query getPlanets ($search: String, $limit: Int, $nin: [uuid!]) {
+    planets(limit: $limit, where: {name: {_ilike: $search}, id: {_nin: $nin}}) {
+      id
+      name
+    }
+    planets_aggregate {
+      aggregate {
+        count
+      }
+    }
+  }
+`
+const GET_ASTRONAUTS = gql`
+  query getAstronauts ($search: String, $limit: Int, $nin: [Int!]) {
+    astronauts(limit: $limit, where: {name: {_ilike: $search}, id: {_nin: $nin}}) {
+      name
+      id
+    }
+    astronauts_aggregate {
+      aggregate {
+        count
+      }
+    }
+  }
+`
+
 
 const App = () => {
   const listFilter = [
@@ -40,22 +45,67 @@ const App = () => {
           {value: 2, label: 'Approved'},
           {value: 3, label: 'Rejected'},
           {value: 4, label: 'Cancelled'},
-          {
-            value: 5,
-            label:
-              'Test style menggunakan label dengan nama yang panjang, Test ',
-          },
-          {
-            value: 6,
-            label:
-              'Test style menggunakan label dengan nama yang panjang, Testngan nama yang panjang, Test ',
-          },
-          {value: 7, label: 'Test style menggunakan labeng, Test '},
-          {
-            value: 8,
-            label: 'Test style menggunakan laestngan nama yang panjang, Test ',
-          },
         ],
+      },
+    },
+    {
+      name: 'Planets', // REQUIRED
+      fieldName: 'planets', // REQUIRED => Unique value
+      type: 'checkbox', // REQUIRED  => Type String => checkbox | date | age | salary
+      // emptyState: 'Empty List', // OPTIONAL => Type String | ReactNode
+      options: {
+        // REQUIRED  =>  Bisa list ngefetch ataupun list hardode
+        fetch: {
+          // ## Cntoh List nge fetch ##
+          query: PLANETS, // REQUIRED  => must include $String
+          options: {
+            variables: {
+              limit: 6
+            }
+          },
+          setData: data => {
+            // REQUIRED => untuk nge mapping data list
+            if (data && data.planets) {
+              const _data = data.planets.map(({id, name}) => {
+                return {
+                  value: id,
+                  label: name,
+                }
+              })
+              return [_data, data.planets_aggregate.aggregate.count]
+            }
+          },
+        },
+      },
+    },
+    {
+      name: 'Astronauts', // REQUIRED
+      fieldName: 'astronauts', // REQUIRED => Unique value
+      type: 'checkbox', // REQUIRED  => Type String => checkbox | date | age | salary
+      // emptyState: 'Empty List', // OPTIONAL => Type String | ReactNode
+      options: {
+        // REQUIRED  =>  Bisa list ngefetch ataupun list hardode
+        fetch: {
+          // ## Cntoh List nge fetch ##
+          query: GET_ASTRONAUTS, // REQUIRED  => must include $String
+          options: {
+            variables: {
+              limit: 6
+            }
+          },
+          setData: data => {
+            // REQUIRED => untuk nge mapping data list
+            if (data && data.astronauts) {
+              const _data = data.astronauts.map(({id, name}) => {
+                return {
+                  value: id,
+                  label: name,
+                }
+              })
+              return [_data, data.astronauts_aggregate.aggregate.count]
+            }
+          },
+        },
       },
     },
     {
@@ -92,18 +142,21 @@ const App = () => {
       vertical: 'top',
       horizontal: 'right',
   }
+
   return (
     <MuiThemeProvider theme={theme}>
       <React.Fragment>
-        <Filter 
-          anchorOrigin={anchorOrigin} // OPTIONAL || see  https://material-ui.com/components/popover/#anchor-playground
-          transformOrigin={transformOrigin} // OPTIONAL || see  https://material-ui.com/components/popover/#anchor-playground
-          id="filter-wlb" // REQUIRED, Unique value
-          onApply={handleApply} // REQUIRED
-          listFilter={listFilter} // REQUIRED
-        >
-          <button>Click me</button>
-        </Filter>
+        <div style={{width: '100%', display: 'flex', justifyContent: 'center'}}>
+          <Filter 
+            anchorOrigin={anchorOrigin} // OPTIONAL || see  https://material-ui.com/components/popover/#anchor-playground
+            transformOrigin={transformOrigin} // OPTIONAL || see  https://material-ui.com/components/popover/#anchor-playground
+            id="filter-wlb" // REQUIRED, Unique value
+            onApply={handleApply} // REQUIRED
+            listFilter={listFilter} // REQUIRED
+          >
+            <button>Click me</button>
+          </Filter>
+        </div>
       </React.Fragment>
     </MuiThemeProvider>
   )

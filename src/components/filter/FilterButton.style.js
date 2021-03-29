@@ -5,7 +5,7 @@ export const ListFilterWrapper = styled.div`
   display: flex;
   flex-direction: column;
   justify-content: space-between;
-  width: 218px;
+  width: 270px;
   box-shadow: 0 3px 6px 0 rgba(0, 0, 0, 0.16);
   z-index: 1;
 
@@ -76,6 +76,21 @@ export const ItemFilterWrapper = styled.div`
     padding: 2px 7px;
   }
 `
+export const LabelTab = styled.div`
+  display: flex;
+  .count {
+    display: ${props => (props.count === 0 || !props.count ? 'none' : 'flex')};
+    border-radius: 24px;
+    background-color: ${props =>
+      !props.active && props.count && props.count !== 0 ? '#014a62' : '#fff'};
+    color: #fff;
+    padding: 0px 10px;
+    margin-left: 10px;
+    text-align: center;
+    align-items: center;
+    font-size: 10px;
+  }
+`
 export const TypeFilterWrapper = styled.div`
   display: flex;
   flex-direction: column;
@@ -114,7 +129,7 @@ export const CheckboxTypeWrapper = styled.div`
   .list-checkbox {
     display: flex;
     flex-direction: column;
-    height: ${props => props.height + 70}px;
+    // height: ${props => props.height + 70}px;
     overflow-y: scroll;
     ::-webkit-scrollbar {
       width: 4px;
@@ -131,6 +146,16 @@ export const CheckboxTypeWrapper = styled.div`
       padding: 34px;
       font-size: 12px;
     }
+  }
+  .more-text {
+    color: #a9a8a8;
+    font-size: 12px;
+    padding: 4px 12px 6px;
+    font-style: italic;
+  }
+  .divider {
+    border-top: 1px solid #e5e5e5;
+    margin: 8px 14px 14px;
   }
 `
 export const DateTypeWrapper = styled.div`

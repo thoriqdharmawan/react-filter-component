@@ -26,6 +26,17 @@ const defaultTransform = {
   horizontal: 'right',
 }
 
+// 'include' = 0, 'exclude' = 1
+const INITIAL_BRIDGE = 0
+const INITIAL_FILTERDATA = {
+  0: {},
+  1: {}
+}
+const INITIAL_GLOBAL_NIN = {
+  0: [],
+  1: []
+}
+
 export default function Filter({
   listFilter,
   id = 'filter',
@@ -34,12 +45,14 @@ export default function Filter({
   transformOrigin = defaultTransform,
   ...children
 }) {
+  const [bridge, setBridge] = useState(INITIAL_BRIDGE)
   const classes = useStyles()
   const [anchorEl, setAnchorEl] = useState(null)
   const [activeFilter, setActiveFilter] = useState(listFilter[0])
   const [ref, {height}] = useGetDimensions()
 
-  const [filterData, setFilterData] = useState({})
+  const [filterData, setFilterData] = useState(INITIAL_FILTERDATA)
+  const [globalNin, setGlobalNin] = useState(INITIAL_GLOBAL_NIN)
 
   const handleClick = event => {
     setAnchorEl(event.currentTarget)
@@ -50,7 +63,8 @@ export default function Filter({
   }
 
   const handleResetAll = () => {
-    setFilterData({})
+    setFilterData(INITIAL_FILTERDATA)
+    setGlobalNin(INITIAL_GLOBAL_NIN)
   }
 
   const handleApply = () => {
@@ -80,7 +94,10 @@ export default function Filter({
         transformOrigin={transformOrigin}
       >
         <ListFilter
+          id={id}
           ref={ref}
+          bridge={bridge}
+          setBridge={setBridge}
           activeFilter={activeFilter}
           setActiveFilter={setActiveFilter}
           listFilter={listFilter}
@@ -94,6 +111,9 @@ export default function Filter({
           filterData={filterData}
           setFilterData={setFilterData}
           activeFilter={activeFilter}
+          setGlobalNin={setGlobalNin}
+          globalNin={globalNin}
+          bridge={bridge}
         />
       </Popover>
     </div>

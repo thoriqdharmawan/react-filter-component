@@ -52,32 +52,41 @@ const TextFieldAge = ({value, onChange, label}) => {
   )
 }
 
-export default function AgeType({activeFilter, setFilterData, filterData}) {
+export default function AgeType({activeFilter, setFilterData, filterData, bridge}) {
   const handleChange = (event, newValue) => {
     event.preventDefault()
     setFilterData(e => ({
       ...e,
-      [activeFilter.fieldName]: {
-        min: newValue[0],
-        max: newValue[1],
-      },
+      [bridge]: {
+        ...e[bridge],
+        [activeFilter.fieldName]: {
+          min: newValue[0],
+          max: newValue[1],
+        },
+      }
     }))
   }
 
   const setter = (idx, value) => {
     setFilterData(e => ({
       ...e,
-      [activeFilter.fieldName]: {
-        ...e[activeFilter.fieldName],
-        [idx]: value,
-      },
+      [bridge]: {
+        ...e[bridge],
+        [activeFilter.fieldName]: {
+          ...e[bridge][activeFilter.fieldName],
+          [idx]: value,
+        },
+      }
     }))
   }
 
   const handleReset = () => {
     setFilterData(e => ({
       ...e,
-      [activeFilter.fieldName]: {},
+      [bridge] : {
+        ...e[bridge],
+        [activeFilter.fieldName]: {},
+      }
     }))
   }
 
@@ -95,8 +104,9 @@ export default function AgeType({activeFilter, setFilterData, filterData}) {
             label="Min"
             value={
               (filterData &&
-                filterData[activeFilter.fieldName] &&
-                filterData[activeFilter.fieldName].min) ||
+                filterData[bridge] &&
+                filterData[bridge][activeFilter.fieldName] &&
+                filterData[bridge][activeFilter.fieldName].min) ||
               false
             }
             onChange={e => {
@@ -109,8 +119,9 @@ export default function AgeType({activeFilter, setFilterData, filterData}) {
             label="Max"
             value={
               (filterData &&
-                filterData[activeFilter.fieldName] &&
-                filterData[activeFilter.fieldName].max) ||
+                filterData[bridge] &&
+                filterData[bridge][activeFilter.fieldName] &&
+                filterData[bridge][activeFilter.fieldName].max) ||
               false
             }
             onChange={e => {
@@ -124,12 +135,14 @@ export default function AgeType({activeFilter, setFilterData, filterData}) {
           max={activeFilter.max}
           value={[
             (filterData &&
-              filterData[activeFilter.fieldName] &&
-              filterData[activeFilter.fieldName].min) ||
+              filterData[bridge] &&
+              filterData[bridge][activeFilter.fieldName] &&
+              filterData[bridge][activeFilter.fieldName].min) ||
               0,
             (filterData &&
-              filterData[activeFilter.fieldName] &&
-              filterData[activeFilter.fieldName].max) ||
+              filterData[bridge] &&
+              filterData[bridge][activeFilter.fieldName] &&
+              filterData[bridge][activeFilter.fieldName].max) ||
               0,
           ]}
           onChange={handleChange}

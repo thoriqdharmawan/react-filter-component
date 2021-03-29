@@ -1,6 +1,5 @@
 import {
   Checkbox,
-  CircularProgress,
   FormControlLabel,
   FormGroup,
   InputAdornment,
@@ -12,6 +11,8 @@ import {CheckboxTypeWrapper} from '../FilterButton.style'
 import SearchIcon from '@material-ui/icons/Search'
 import {useLazyQuery} from '@apollo/react-hooks'
 import gql from 'graphql-tag'
+import { LoadingComponent } from '../shared/CircularProgress'
+import { filterArrayOfObject, getNinVariables } from '../helper'
 
 const useStyles = makeStyles({
   root: {
@@ -75,27 +76,36 @@ const DUMY = gql`
   }
 `
 
+const SLICE_TRESHOLD = 6
+const INITIAL_NIN = []
+
 export default function CheckboxType({
   activeFilter,
   setFilterData,
   filterData,
   height,
+  bridge,
+  globalNin,
+  setGlobalNin
 }) {
   const classes = useStyles()
   const {fieldName, emptyState} = activeFilter
   const {fetch, list} = activeFilter.options
   const [search, setSearch] = useState('')
-  const [loading, setLoading] = useState(false)
   const [optionResult, setOptionResult] = useState(undefined)
+  const [totalData, setTotalData] = useState(0)
 
-  const [getDataQuery, {data}] = useLazyQuery((fetch && fetch.query) || DUMY)
+  const [getDataQuery, {data, loading: fetchLoading, refetch}] = useLazyQuery((fetch && fetch.query) || DUMY)
+  const SEARCH_VARIABLES = `%${search}%`
 
   useLayoutEffect(() => {
     if (fetch) {
       getDataQuery({
         variables: {
           ...fetch.options.variables,
-          search: `%${search}%`,
+          limit: fetch.options.variables.limit,
+          search: SEARCH_VARIABLES,
+          nin: globalNin && globalNin[bridge] && globalNin[bridge][fieldName] || [],
         },
       })
     } else {
@@ -104,32 +114,57 @@ export default function CheckboxType({
       }
     }
     if (data && fetch) {
-      setOptionResult(fetch.setData(data) || [])
-      setLoading(false)
+      const [dataMap, totalData] = fetch.setData(data) || []
+      setOptionResult(dataMap || [])
+      setTotalData(totalData)
     }
-  }, [data, search, activeFilter])
+  }, [data, search, activeFilter, globalNin])
 
   const handleChange = (e, check, item) => {
     e.preventDefault()
     if (fetch) {
+      const _nin = getNinVariables(_selectedCheckbox, item, check)
+      setGlobalNin(nin => {
+        return {
+          ...nin,
+          [bridge]: {
+            ...nin[bridge],
+            [fieldName]: _nin
+          }
+        }
+      })
+      const variables = {
+        ...fetch.options.variables,
+        limit: fetch.options.variables.limit,
+        nin: _nin,
+        search: SEARCH_VARIABLES,
+      }
+      refetch(variables)
       setOptionResult(fetch.setData(data) || [])
     }
     setFilterData(filter => {
       let newValue = []
       if (check) {
-        if (filter && filter[fieldName] && filter[fieldName].length > 0) {
-          newValue = [...filter[fieldName]]
+        if (filter && filter[bridge] && filter[bridge][fieldName] && filter[bridge][fieldName].length > 0) {
+          newValue = [...filter[bridge][fieldName]]
         }
         newValue.push(item)
       } else {
-        const newData = [...filter[fieldName]].filter(function(itm) {
+        const newData = [...filter[bridge][fieldName]].filter(function(itm) {
           return itm.value !== item.value
         })
         newValue = newData
       }
-      return {...filter, [fieldName]: newValue}
+      return {
+        ...filter, 
+        [bridge]: {
+          ...filter[bridge],
+          [fieldName]: newValue
+        }
+      }
     })
   }
+
 
   const isAdded = (check, dataSelected) => {
     let result = false
@@ -146,8 +181,8 @@ export default function CheckboxType({
   }
 
   const handleCheck = dataSelected => {
-    if (isAdded(filterData && filterData[fieldName], dataSelected)) {
-      const stgCheck = [...filterData[fieldName]]
+    if (isAdded(filterData && filterData[bridge] && filterData[bridge][fieldName], dataSelected)) {
+      const stgCheck = [...filterData[bridge][fieldName]]
       const index = stgCheck
         .map(e => {
           return e.value
@@ -156,29 +191,93 @@ export default function CheckboxType({
       if (index > -1) {
         stgCheck.splice(index, 1)
       }
-      setFilterData(filter => ({...filter, [fieldName]: stgCheck}))
+      setFilterData(filter => {
+        return {
+          ...filter, 
+          [bridge]: {
+            ...filter[bridge],
+            [fieldName]: stgCheck
+          }
+        }
+      })
     } else {
       setFilterData(filter => {
         let newValue = []
-        if (filter && filter[fieldName] && filter[fieldName].length > 0) {
-          newValue = [...filter[fieldName]]
+        if (filterData && filterData[bridge] && filter[bridge][fieldName] && filter[bridge][fieldName].length > 0) {
+          newValue = [...filter && filter[bridge] &&filter[bridge][fieldName]]
         }
         newValue.push(dataSelected)
-        return {...filter, [fieldName]: newValue}
+        return {
+          ...filter, 
+          [bridge]: {
+            ...filter[bridge],
+            [fieldName]: newValue
+          }
+        }
       })
     }
   }
 
   const handleSelectAll = () => {
-    setFilterData(filter => ({...filter, [fieldName]: optionResult}))
+    const _filterData = [...new Set([...(filterData && filterData[bridge] && filterData[bridge][fieldName] || []), ...optionResult])];
+    setFilterData(filter => {
+      return {
+        ...filter, 
+        [bridge]: {
+          ...filter[bridge],
+          [fieldName]: _filterData
+        }
+      }
+    })
+    if(fetch) {
+      const _nin = optionResult.map(obj => obj.value)
+      const newGlobalNin = [...(globalNin && globalNin[bridge] && globalNin[bridge][fieldName] || []), ..._nin]
+      const _newGlobalNin = [...new Set(newGlobalNin)];
+      setGlobalNin({
+        ...globalNin,
+        [bridge]: {
+          ...globalNin[bridge],
+          [fieldName]: _newGlobalNin
+        }
+      })
+      refetch({
+        ...fetch.options.variables,
+        limit: fetch.options.variables.limit,
+        nin: _newGlobalNin,
+        search: SEARCH_VARIABLES,
+      })
+    }
   }
+  
   const handleReset = () => {
-    setFilterData(filter => ({...filter, [fieldName]: []}))
+    setFilterData(filter => {
+      return {
+        ...filter, 
+        [bridge]: {
+          ...filter[bridge],
+          [fieldName]: []
+        }
+      }
+    })
+    if(fetch) {
+      setGlobalNin({
+        ...globalNin,
+        [bridge]: {
+          ...globalNin[bridge],
+          [fieldName]: []
+        }
+      })
+      refetch({
+        ...fetch.options.variables,
+        limit: fetch.options.variables.limit,
+        nin: INITIAL_NIN,
+        search: SEARCH_VARIABLES,
+      })
+    }
   }
 
   const handleSearch = e => {
     if (fetch) {
-      setLoading(true)
       setSearch(e.target.value)
     } else {
       const newInitial = [...list]
@@ -191,6 +290,10 @@ export default function CheckboxType({
       }
     }
   }
+
+  const _selectedCheckbox =
+    filterData && filterData[bridge] && filterData[bridge][fieldName] || []
+
   return (
     <CheckboxTypeWrapper height={height}>
       <TextField
@@ -219,16 +322,53 @@ export default function CheckboxType({
           Reset
         </span>
       </div>
-      <div className="list-checkbox">
-        <FormGroup>
-          {optionResult && !loading ? (
-            optionResult.length > 0 ? (
-              optionResult.map((item, i) => (
+      {_selectedCheckbox[0] && (
+        <>
+          <div className='list-checkbox'>
+            <FormGroup>
+              {_selectedCheckbox.reverse().slice(0, SLICE_TRESHOLD).map((item, i) => (
                 <CheckboxItem
                   checked={
                     (filterData &&
-                      filterData[fieldName] &&
-                      filterData[fieldName].some(
+                      filterData[bridge] &&
+                      filterData[bridge][fieldName] &&
+                      filterData[bridge][fieldName].some(
+                        (e) => e.value === item.value
+                      )) ||
+                    false
+                  }
+                  key={`${i}-${item.value}`}
+                  onChange={
+                    fetch
+                      ? (e, check) => handleChange(e, check, item)
+                      : () => handleCheck(item)
+                  }
+                  value={item.value}
+                  label={item.label}
+                  name={fieldName}
+                />
+              ))}
+            </FormGroup>
+          </div>
+          {_selectedCheckbox.length > SLICE_TRESHOLD && (
+            <div className="more-text">
+              and {_selectedCheckbox.length - SLICE_TRESHOLD} hidden items
+            </div>
+          )}
+          <div className='divider' />
+        </>
+      )}
+      <div className="list-checkbox">
+        <FormGroup>
+          {optionResult && !fetchLoading ? (
+            optionResult.length > 0 ? (
+              filterArrayOfObject(optionResult, _selectedCheckbox).map((item, i) => (
+                <CheckboxItem
+                  checked={
+                    (filterData &&
+                      filterData[bridge] &&
+                      filterData[bridge][fieldName] &&
+                      filterData[bridge][fieldName].some(
                         e => e.value === item.value
                       )) ||
                     false
@@ -247,20 +387,14 @@ export default function CheckboxType({
             ) : (
               <div className="empty-list">{emptyState || ''}</div>
             )
-          ) : (
-            <div
-              style={{
-                display: 'flex',
-                alignItems: 'center',
-                justifyContent: 'center',
-                padding: '40px 0px',
-              }}
-            >
-              <CircularProgress />
-            </div>
-          )}
+          ) : <LoadingComponent />}
         </FormGroup>
       </div>
+      {fetch && totalData - _selectedCheckbox.length > SLICE_TRESHOLD && (
+        <div className='more-text'>
+          and {(totalData - _selectedCheckbox.length) - SLICE_TRESHOLD} hidden items
+        </div>
+      )}
     </CheckboxTypeWrapper>
   )
 }

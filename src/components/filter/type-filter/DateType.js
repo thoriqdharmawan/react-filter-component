@@ -17,21 +17,28 @@ export default function DateType({
   activeFilter,
   setFilterData,
   filterData,
+  bridge,
 }) {
   const handleChangeDate = (e, target) => {
     setFilterData({
       ...filterData,
-      [activeFilter.fieldName]: {
-        ...(filterData && filterData[activeFilter.fieldName]),
-        [target]: e,
-      },
+      [bridge]: {
+        ...filterData[bridge],
+        [activeFilter.fieldName]: {
+          ...(filterData && filterData[bridge] && filterData[bridge][activeFilter.fieldName]),
+          [target]: e,
+        },
+      }
     })
   }
 
   const handleReset = () => {
     setFilterData({
-      ...filterData,
-      [activeFilter.fieldName]: {},
+      ...filterData, 
+      [bridge]: {
+        ...filterData[bridge],
+        [activeFilter.fieldName]: []
+      }
     })
   }
   const classes = useStyles()
@@ -54,8 +61,9 @@ export default function DateType({
           }}
           value={
             (filterData &&
-              filterData[activeFilter.fieldName] &&
-              filterData[activeFilter.fieldName].from) ||
+              filterData[bridge] &&
+              filterData[bridge][activeFilter.fieldName] &&
+              filterData[bridge][activeFilter.fieldName].from) ||
             null
           }
           inputVariant="outlined"
@@ -74,8 +82,9 @@ export default function DateType({
           }}
           value={
             (filterData &&
-              filterData[activeFilter.fieldName] &&
-              filterData[activeFilter.fieldName].to) ||
+              filterData[bridge] &&
+              filterData[bridge][activeFilter.fieldName] &&
+              filterData[bridge][activeFilter.fieldName].to) ||
             null
           }
           inputVariant="outlined"

@@ -76,32 +76,41 @@ const TextFieldSalary = ({value, onChange, label}) => {
   )
 }
 
-export default function SalaryType({activeFilter, setFilterData, filterData}) {
+export default function SalaryType({activeFilter, setFilterData, filterData, bridge}) {
   const handleChange = (event, newValue) => {
     event.preventDefault()
     setFilterData(e => ({
       ...e,
-      [activeFilter.fieldName]: {
-        min: changeToNumber(newValue[0]),
-        max: changeToNumber(newValue[1]),
-      },
+      [bridge]: {
+        ...e[bridge],
+        [activeFilter.fieldName]: {
+          min: changeToNumber(newValue[0]),
+          max: changeToNumber(newValue[1]),
+        },
+      }
     }))
   }
 
   const setter = (idx, value) => {
     setFilterData(e => ({
       ...e,
-      [activeFilter.fieldName]: {
-        ...e[activeFilter.fieldName],
-        [idx]: value,
-      },
+      [bridge]: {
+        ...e[bridge],
+        [activeFilter.fieldName]: {
+          ...e[bridge][activeFilter.fieldName],
+          [idx]: value,
+        },
+      }
     }))
   }
 
   const handleReset = () => {
     setFilterData(e => ({
       ...e,
-      [activeFilter.fieldName]: {},
+      [bridge] : {
+        ...e[bridge],
+        [activeFilter.fieldName]: {},
+      }
     }))
   }
 
@@ -119,9 +128,10 @@ export default function SalaryType({activeFilter, setFilterData, filterData}) {
             label="Min"
             value={formatatSalary(
               (filterData &&
-                filterData[activeFilter.fieldName] &&
-                filterData[activeFilter.fieldName].min &&
-                filterData[activeFilter.fieldName].min.toString()) ||
+                filterData[bridge] &&
+                filterData[bridge][activeFilter.fieldName] &&
+                filterData[bridge][activeFilter.fieldName].min &&
+                filterData[bridge][activeFilter.fieldName].min.toString()) ||
                 ''
             )}
             // value={value1 || ''}
@@ -135,9 +145,10 @@ export default function SalaryType({activeFilter, setFilterData, filterData}) {
             label="Max"
             value={formatatSalary(
               (filterData &&
-                filterData[activeFilter.fieldName] &&
-                filterData[activeFilter.fieldName].max &&
-                filterData[activeFilter.fieldName].max.toString()) ||
+                filterData[bridge] &&
+                filterData[bridge][activeFilter.fieldName] &&
+                filterData[bridge][activeFilter.fieldName].max &&
+                filterData[bridge][activeFilter.fieldName].max.toString()) ||
                 ''
             )}
             // value={value2 || ''}
@@ -152,14 +163,16 @@ export default function SalaryType({activeFilter, setFilterData, filterData}) {
           max={activeFilter.max}
           value={[
             (filterData &&
-              filterData[activeFilter.fieldName] &&
-              filterData[activeFilter.fieldName].min &&
-              filterData[activeFilter.fieldName].min) ||
+              filterData[bridge] &&
+              filterData[bridge][activeFilter.fieldName] &&
+              filterData[bridge][activeFilter.fieldName].min &&
+              filterData[bridge][activeFilter.fieldName].min) ||
               0,
             (filterData &&
-              filterData[activeFilter.fieldName] &&
-              filterData[activeFilter.fieldName].max &&
-              filterData[activeFilter.fieldName].max) ||
+              filterData[bridge] &&
+              filterData[bridge][activeFilter.fieldName] &&
+              filterData[bridge][activeFilter.fieldName].max &&
+              filterData[bridge][activeFilter.fieldName].max) ||
               0,
           ]}
           onChange={handleChange}
