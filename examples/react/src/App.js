@@ -61,7 +61,12 @@ const App = () => {
           options: {
             variables: {
               limit: 6
-            }
+            },
+            context: {
+              headers: {
+                'X-Hasura-Role': 'public',
+              },
+            },
           },
           setData: data => {
             // REQUIRED => untuk nge mapping data list

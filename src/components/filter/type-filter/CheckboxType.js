@@ -95,7 +95,10 @@ export default function CheckboxType({
   const [optionResult, setOptionResult] = useState(undefined)
   const [totalData, setTotalData] = useState(0)
 
-  const [getDataQuery, {data, loading: fetchLoading, refetch}] = useLazyQuery((fetch && fetch.query) || DUMY)
+  const [getDataQuery, { data, error, loading: fetchLoading, refetch }] = useLazyQuery(
+    (fetch && fetch.query) || DUMY,
+    fetch && fetch.options
+  )
   const SEARCH_VARIABLES = `%${search}%`
 
   useLayoutEffect(() => {
